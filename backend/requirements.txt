@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+python-dotenv
+anthropic
+pydantic
+pydantic-settings
+pdfplumber
+reportlab
+sentence-transformers
+scikit-learn
+spacy
+numpy

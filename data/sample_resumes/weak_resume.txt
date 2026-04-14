@@ -1,0 +1,30 @@
+JOHN DOE
+john.doe@email.com | (555) 123-4567
+LinkedIn: linkedin.com/in/johndoe | GitHub: github.com/johndoe
+
+PROFESSIONAL SUMMARY
+Junior software engineer with 2 years of experience in backend development. Familiar with Python, JavaScript, and cloud platforms. Looking to grow skills in scalable architecture and system design.
+
+EXPERIENCE
+
+Backend Developer | Tech Innovations Inc. | January 2023 - Present
+- Built REST APIs using Python and FastAPI
+- Worked with SQL databases and wrote optimized queries
+- Deployed applications to AWS using Docker
+- Fixed bugs reported by QA team
+- Used Git for version control
+
+Junior Developer | StartupXYZ | June 2022 - December 2022
+- Developed web features using React and JavaScript
+- Helped with database migrations
+- Participated in daily stand-ups and code reviews
+- Fixed issues in existing codebase
+
+EDUCATION
+B.S. in Computer Science | Tech University | 2022
+
+TECHNICAL SKILLS
+Languages: Python, JavaScript, SQL
+Frameworks: FastAPI, React, Django
+Databases: PostgreSQL, MongoDB
+Tools: Git, Docker, AWS
