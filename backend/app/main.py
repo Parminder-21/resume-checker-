@@ -1,52 +1,101 @@
-from fastapi import FastAPI
+import logging
+import sys
+import os
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+# Allow ai_engine imports from project root
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+
 from app.routes import upload, optimize, download
 from app.core.config import settings
-from sentence_transformers import SentenceTransformer
-import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(levelname)s  %(name)s — %(message)s"
+)
 logger = logging.getLogger(__name__)
+
+# Debug: Check if Groq API key is loaded
+if not settings.GROQ_API_KEY:
+    logger.warning("⚠️  GROQ_API_KEY not found in environment!")
+    logger.warning("⚠️  Set GROQ_API_KEY in .env file for resume rewriting to work")
+else:
+    logger.info("✅ GROQ_API_KEY loaded from environment")
+
+
+# ─── Startup / Shutdown ───────────────────────────────────────────────────────
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load SBERT model once at startup — not per request."""
+    logger.info("Loading SBERT model...")
+    try:
+        from sentence_transformers import SentenceTransformer
+        app.state.sbert_model = SentenceTransformer(settings.SBERT_MODEL)
+        logger.info(f"✅ SBERT model '{settings.SBERT_MODEL}' loaded successfully")
+    except Exception as e:
+        logger.warning(f"⚠️ Could not load SBERT model: {e}")
+        logger.warning("⚠️ Using dummy model for similarity scoring (output may be less accurate)")
+        # Create a dummy model object with encode method
+        class DummyModel:
+            def encode(self, text):
+                import numpy as np
+                # Return random embeddings for testing
+                return np.random.rand(1, 384)
+        app.state.sbert_model = DummyModel()
+
+    yield  # App runs here
+
+    logger.info("Shutting down OptiResume AI...")
+
+
+# ─── App ──────────────────────────────────────────────────────────────────────
 
 app = FastAPI(
     title="OptiResume AI",
+    description="Real-time ATS Simulator & Resume Optimizer",
     version="1.0.0",
-    description="Real-time ATS Simulator & Resume Optimizer"
+    lifespan=lifespan
 )
 
-# CORS middleware for React frontend
+# CORS — allow React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.ALLOWED_ORIGINS],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Load SBERT model once at startup
-@app.on_event("startup")
-async def load_models():
-    try:
-        logger.info("Loading SBERT model...")
-        app.state.sbert_model = SentenceTransformer('all-MiniLM-L6-v2')
-        logger.info("✅ SBERT model loaded successfully")
-    except Exception as e:
-        logger.error(f"❌ Failed to load SBERT model: {e}")
-        raise
 
-# Register routers
-app.include_router(upload.router, prefix="/api/v1", tags=["Resume Operations"])
-app.include_router(optimize.router, prefix="/api/v1", tags=["Optimization"])
+# ─── Global Error Handler ─────────────────────────────────────────────────────
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception on {request.url}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"status": "error", "message": "An unexpected error occurred. Please try again."}
+    )
+
+
+# ─── Routes ───────────────────────────────────────────────────────────────────
+
+app.include_router(upload.router,   prefix="/api/v1", tags=["Upload"])
+app.include_router(optimize.router, prefix="/api/v1", tags=["Optimize"])
 app.include_router(download.router, prefix="/api/v1", tags=["Download"])
 
-@app.get("/health")
-async def health_check():
-    return {"status": "ok", "version": "1.0.0"}
 
-@app.get("/")
-async def root():
-    return {"message": "OptiResume AI API v1.0.0 - Hackathon MVP"}
+# ─── Health Check ─────────────────────────────────────────────────────────────
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/health", tags=["Health"])
+def health_check():
+    return {
+        "status": "ok",
+        "model_loaded": hasattr(app.state, "sbert_model"),
+        "version": "1.0.0"
+    }

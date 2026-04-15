@@ -1,9 +1,95 @@
 {
-  "languages": ["Python", "Java", "JavaScript", "TypeScript", "C++", "C#", "Go", "Rust", "Ruby", "PHP", "Swift", "Kotlin", "R", "MATLAB", "SQL", "Scala"],
-  "frameworks": ["React", "Vue", "Angular", "FastAPI", "Django", "Flask", "Spring Boot", "ASP.NET", "Express", "Next.js", "NestJS", "Laravel", "Rails"],
-  "cloud": ["AWS", "Google Cloud", "Azure", "Docker", "Kubernetes", "Terraform", "CloudFormation", "Lambda", "EC2", "S3", "GCP"],
-  "databases": ["SQL", "MongoDB", "PostgreSQL", "MySQL", "Redis", "Cassandra", "Elasticsearch", "Firebase", "DynamoDB", "Neo4j"],
-  "ml": ["TensorFlow", "PyTorch", "scikit-learn", "Keras", "NLP", "Computer Vision", "Deep Learning", "Machine Learning", "XGBoost"],
-  "devops": ["Git", "GitHub", "GitLab", "CI/CD", "Jenkins", "Docker", "Linux", "Nginx", "Apache", "Jira", "DevOps"],
-  "other": ["REST API", "GraphQL", "Microservices", "Agile", "Scrum", "Testing", "AWS", "GCP", "Blockchain"]
+  "version": "1.0",
+  "total_skills": 520,
+  "categories": {
+    "languages": [
+      "Python", "Java", "JavaScript", "TypeScript", "C++", "C#", "C",
+      "Go", "Golang", "Rust", "Swift", "Kotlin", "Ruby", "PHP", "Scala",
+      "R", "MATLAB", "Perl", "Shell", "Bash", "PowerShell", "Dart",
+      "Haskell", "Elixir", "Clojure", "F#", "Lua", "Julia", "Groovy"
+    ],
+    "web_frontend": [
+      "React", "React.js", "Vue", "Vue.js", "Angular", "Next.js", "Nuxt.js",
+      "Svelte", "SvelteKit", "HTML", "CSS", "SASS", "SCSS", "Tailwind CSS",
+      "Bootstrap", "jQuery", "Redux", "Zustand", "Recoil", "MobX",
+      "GraphQL", "REST", "REST APIs", "Webpack", "Vite", "Babel",
+      "Storybook", "Jest", "Cypress", "Playwright", "Enzyme",
+      "Three.js", "D3.js", "Chart.js", "Framer Motion"
+    ],
+    "web_backend": [
+      "Node.js", "Express", "FastAPI", "Django", "Flask", "Spring Boot",
+      "Spring", "Laravel", "Rails", "Ruby on Rails", "ASP.NET", ".NET",
+      "NestJS", "Hapi", "Koa", "Gin", "Echo", "Fiber",
+      "gRPC", "WebSockets", "GraphQL", "REST APIs", "Microservices",
+      "API Gateway", "OAuth", "JWT", "OpenAPI", "Swagger"
+    ],
+    "databases": [
+      "SQL", "MySQL", "PostgreSQL", "SQLite", "Oracle", "MS SQL Server",
+      "MongoDB", "Redis", "Cassandra", "DynamoDB", "Firebase", "Firestore",
+      "Elasticsearch", "Neo4j", "CouchDB", "InfluxDB", "Supabase",
+      "BigQuery", "Snowflake", "Redshift", "Databricks", "dbt"
+    ],
+    "cloud_devops": [
+      "AWS", "Amazon Web Services", "GCP", "Google Cloud", "Azure",
+      "Microsoft Azure", "Docker", "Kubernetes", "K8s", "Terraform",
+      "Ansible", "Jenkins", "GitHub Actions", "GitLab CI", "CircleCI",
+      "Travis CI", "Helm", "ArgoCD", "Prometheus", "Grafana",
+      "CloudFormation", "Pulumi", "Serverless", "Lambda", "EC2", "S3",
+      "ECS", "EKS", "GKE", "Cloud Run", "App Engine", "Heroku",
+      "Railway", "Render", "Vercel", "Netlify", "DigitalOcean",
+      "CI/CD", "DevOps", "SRE", "Infrastructure as Code", "IaC"
+    ],
+    "data_science": [
+      "Machine Learning", "Deep Learning", "NLP", "Natural Language Processing",
+      "Computer Vision", "TensorFlow", "PyTorch", "Keras", "scikit-learn",
+      "Pandas", "NumPy", "Matplotlib", "Seaborn", "Plotly", "Jupyter",
+      "Apache Spark", "Hadoop", "Kafka", "Airflow", "dbt", "MLflow",
+      "Weights & Biases", "Hugging Face", "LangChain", "OpenAI",
+      "LLM", "RAG", "Fine-tuning", "Embeddings", "Vector Database",
+      "Pinecone", "FAISS", "Weaviate", "Chroma",
+      "Power BI", "Tableau", "Looker", "Metabase",
+      "Data Analysis", "Data Science", "Data Engineering", "ETL",
+      "Feature Engineering", "A/B Testing", "Statistics",
+      "Linear Algebra", "Probability", "Hypothesis Testing",
+      "SageMaker", "Vertex AI", "Azure ML", "AutoML",
+      "XGBoost", "LightGBM", "CatBoost", "Random Forest",
+      "BERT", "GPT", "Transformers", "sentence-transformers",
+      "spaCy", "NLTK", "OpenCV", "PIL"
+    ],
+    "mobile": [
+      "iOS", "Android", "React Native", "Flutter", "Xamarin",
+      "Objective-C", "SwiftUI", "Jetpack Compose", "Expo"
+    ],
+    "tools_practices": [
+      "Git", "GitHub", "GitLab", "Bitbucket", "JIRA", "Confluence",
+      "Figma", "Postman", "Swagger", "Linux", "Unix",
+      "Agile", "Scrum", "Kanban", "TDD", "BDD",
+      "System Design", "Architecture", "Code Review",
+      "Technical Writing", "Documentation", "Bash scripting",
+      "pytest", "JUnit", "Mocha", "Jasmine", "Selenium",
+      "SonarQube", "Datadog", "New Relic", "Splunk",
+      "Kafka", "RabbitMQ", "ActiveMQ", "Celery", "Apache Flink",
+      "Nginx", "Apache HTTP", "Load Balancing", "CDN",
+      "SSH", "VPN", "DNS", "TCP/IP", "HTTP/HTTPS"
+    ],
+    "security": [
+      "Cybersecurity", "Penetration Testing", "OWASP", "SSL/TLS",
+      "Vulnerability Assessment", "SIEM", "Firewall", "VPN",
+      "Encryption", "PKI", "SOC", "Zero Trust", "IAM"
+    ],
+    "soft_skills": [
+      "Leadership", "Communication", "Problem Solving",
+      "Team Collaboration", "Project Management", "Product Management",
+      "Mentoring", "Cross-functional collaboration", "Stakeholder management"
+    ]
+  },
+  "priority_skills": {
+    "description": "High-value skills that appear most frequently in JDs — should be weighted more in gap detection",
+    "skills": [
+      "Python", "AWS", "Docker", "Kubernetes", "CI/CD", "PostgreSQL",
+      "React", "Node.js", "TypeScript", "Machine Learning", "FastAPI",
+      "Redis", "Kafka", "Terraform", "GraphQL", "Next.js", "Go",
+      "Spark", "Airflow", "dbt", "LLM", "RAG", "LangChain"
+    ]
+  }
 }

@@ -1,0 +1,36 @@
+Machine Learning Engineer
+AI Ventures | Hyderabad, India | Full-time
+
+About the Role:
+We are looking for a Machine Learning Engineer to join our AI/ML team. You will build production-grade ML pipelines, train and deploy models, and work closely with product teams to integrate AI into our platform.
+
+Responsibilities:
+- Design, train, and deploy machine learning models into production
+- Build and maintain scalable ML pipelines (data preprocessing, feature engineering, model serving)
+- Collaborate with data scientists to productionize research models
+- Optimize model performance and monitor model drift in production
+- Implement MLOps practices: versioning, CI/CD for ML, model monitoring
+- Work with large datasets using distributed computing tools
+
+Required Qualifications:
+- 2+ years of ML engineering or data science experience
+- Strong Python programming skills
+- Hands-on experience with machine learning frameworks: TensorFlow, PyTorch, or scikit-learn
+- Experience with NLP, computer vision, or tabular ML models
+- Familiarity with ML experiment tracking (MLflow, Weights & Biases)
+- Experience deploying models using REST APIs (FastAPI or Flask)
+- Understanding of feature engineering and data preprocessing
+- Experience with SQL and working with structured datasets
+
+Preferred Qualifications:
+- Experience with LLMs, RAG pipelines, or fine-tuning (Hugging Face, LangChain)
+- Familiarity with vector databases (Pinecone, FAISS, Weaviate)
+- Experience with Apache Airflow or Kubeflow pipelines
+- Docker and Kubernetes for model deployment
+- AWS SageMaker or GCP Vertex AI experience
+- Knowledge of distributed training (PyTorch DDP, Horovod)
+
+What We Look For:
+- Strong mathematical foundation (linear algebra, statistics, probability)
+- Experience with A/B testing for ML models
+- Ability to communicate complex results clearly to non-technical stakeholders

@@ -22,7 +22,7 @@ python -m pip install --upgrade pip setuptools wheel
 
 echo.
 echo Installing requirements...
-pip install fastapi uvicorn python-multipart python-dotenv anthropic pydantic pydantic-settings
+pip install -r requirements.txt
 
 echo.
 echo ========================================

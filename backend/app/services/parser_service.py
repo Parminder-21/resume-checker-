@@ -1,29 +1,43 @@
-import pdfplumber
-import io
-from typing import Tuple
-from app.core.utils import extract_sections, clean_text
+import sys
+import os
 
-async def parse_pdf(file_content: bytes) -> Tuple[str, dict]:
+# Allow importing ai_engine from project root
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+
+from ai_engine.pdf.pdf_parser import parse_pdf_file
+from ai_engine.extraction.section_detector import detect_sections
+from app.core.utils import clean_text, truncate_text
+from app.core.config import settings
+
+
+def process_uploaded_pdf(file_path: str) -> dict:
     """
-    Extract text and sections from PDF resume.
-    
-    Returns: (full_text, sections_dict)
+    Parse uploaded PDF and return structured resume data.
+
+    Returns:
+        {
+            raw_text: str,
+            sections_detected: list[str],
+            char_count: int
+        }
     """
-    try:
-        pdf_file = io.BytesIO(file_content)
-        text_content = ""
-        
-        with pdfplumber.open(pdf_file) as pdf:
-            for page in pdf.pages:
-                text_content += page.extract_text() or ""
-        
-        if not text_content.strip():
-            raise ValueError("No text extracted from PDF")
-        
-        # Extract sections
-        sections = extract_sections(text_content)
-        
-        return text_content, sections
-    
-    except Exception as e:
-        raise Exception(f"PDF parsing error: {str(e)}")
+    raw_text = parse_pdf_file(file_path)
+
+    if not raw_text or len(raw_text.strip()) < 100:
+        raise ValueError(
+            "Could not extract readable text from this PDF. "
+            "Please ensure it is not a scanned or image-based PDF. "
+            "You can also paste your resume text directly."
+        )
+
+    cleaned = clean_text(raw_text)
+    truncated = truncate_text(cleaned, settings.MAX_RESUME_CHARS)
+
+    sections = detect_sections(truncated)
+    sections_detected = [k for k, v in sections.items() if v.strip()]
+
+    return {
+        "raw_text": truncated,
+        "sections_detected": sections_detected,
+        "char_count": len(truncated)
+    }

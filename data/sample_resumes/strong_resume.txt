@@ -1,0 +1,59 @@
+Priya Sharma
+priya.sharma@email.com | +91 9876543210 | linkedin.com/in/priyasharma | github.com/priyasharma
+
+SUMMARY
+Backend Software Engineer with 2+ years of experience building scalable REST APIs and data pipelines using Python and FastAPI. Proven track record of reducing system latency by 35% and improving deployment efficiency through CI/CD automation. Passionate about clean code, system design, and delivering measurable impact.
+
+EXPERIENCE
+
+Software Engineer
+TechCorp India, Bangalore
+August 2023 – Present
+
+- Engineered RESTful microservices using FastAPI serving 100K+ daily API requests with 99.9% uptime
+- Designed and implemented a PostgreSQL schema migration reducing query latency by 35% for critical reporting endpoints
+- Automated CI/CD pipelines using GitHub Actions, cutting deployment time from 45 minutes to 8 minutes
+- Integrated Redis caching layer for frequently accessed endpoints, improving response time by 60%
+- Collaborated with frontend engineers to define API contracts and deliver features in 2-week Agile sprints
+- Conducted code reviews for a team of 5 engineers, enforcing best practices and reducing bug density by 20%
+
+Software Developer Intern
+DataSync Solutions, Pune
+May 2022 – July 2022
+
+- Built a real-time data ingestion pipeline using Apache Kafka processing 50K events/hour
+- Developed ETL scripts in Python (Pandas, SQLAlchemy) automating manual data workflows, saving 8 hours/week
+- Created interactive dashboards using Tableau visualizing KPIs for business stakeholders
+- Deployed containerized Flask microservices on AWS EC2 using Docker, supporting 3 production environments
+
+EDUCATION
+
+Bachelor of Technology – Computer Science
+Pune University, Pune
+2019 – 2023 | CGPA: 8.6/10
+
+TECHNICAL SKILLS
+
+Languages:     Python, JavaScript, TypeScript, SQL, Bash
+Frameworks:    FastAPI, Django, Flask, React, Node.js
+Databases:     PostgreSQL, MySQL, MongoDB, Redis
+Cloud & DevOps: AWS (EC2, S3, Lambda), Docker, Kubernetes, GitHub Actions, Jenkins
+Data:          Pandas, NumPy, Apache Kafka, Tableau, ETL
+Tools:         Git, Postman, JIRA, Linux, VS Code
+
+PROJECTS
+
+ATS Resume Optimizer (2024)
+- Built a full-stack AI application using FastAPI + React that semantically scores resumes against job descriptions using sentence-transformers (SBERT), achieving 40%+ average ATS score improvement
+- Integrated Claude API for context-aware resume rewriting with hallucination prevention layer
+- Deployed on Railway with GitHub Actions CI/CD; handled 500+ optimization requests during hackathon demo
+
+Real-time Stock Dashboard (2023)
+- Developed a WebSocket-based live stock tracking dashboard using FastAPI + React with 200ms latency
+- Integrated Alpha Vantage API with Redis caching, reducing external API calls by 80%
+- Containerized with Docker Compose for one-command local deployment
+
+CERTIFICATIONS
+- AWS Certified Cloud Practitioner (2023)
+- Google Data Analytics Professional Certificate (2022)
+- FastAPI Advanced – Udemy (2023)

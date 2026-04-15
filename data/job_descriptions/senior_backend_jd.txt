@@ -1,56 +1,39 @@
-JOB TITLE: Senior Backend Engineer
+Software Engineer – Backend (Python)
+TechNova Inc. | Bangalore, India | Full-time
 
-COMPANY: CloudScale Systems Inc.
+About the Role:
+We are looking for a Backend Software Engineer to join our growing engineering team. You will design, build, and maintain scalable backend services that power our SaaS platform serving 500K+ users globally.
 
-POSITION OVERVIEW
-We are looking for an experienced Senior Backend Engineer to lead our infrastructure and API development efforts. You will architect scalable microservices, mentor junior engineers, and drive technical excellence across our platform serving 100K+ daily active users.
+Responsibilities:
+- Design and develop high-performance REST APIs and microservices
+- Build and maintain data pipelines and backend infrastructure
+- Collaborate with cross-functional teams to define and ship product features
+- Write clean, testable, well-documented code
+- Participate in code reviews and architecture discussions
+- Monitor and optimize system performance and reliability
+- Contribute to CI/CD pipeline improvements
 
-RESPONSIBILITIES
-- Design and develop scalable REST and GraphQL APIs
-- Architect microservices-based applications using containerization and orchestration
-- Implement robust CI/CD pipelines for automated testing and deployment
-- Optimize database performance and manage complex queries
-- Lead code reviews and establish best practices
-- Mentor and guide junior developers
-- Collaborate with DevOps to ensure system reliability
-- Participate in system design discussions and technical planning
-- Troubleshoot and resolve production issues
-- Document technical specifications and architecture decisions
+Required Qualifications:
+- 2+ years of software engineering experience
+- Strong proficiency in Python (FastAPI, Django, or Flask)
+- Experience with REST API design and development
+- Solid understanding of SQL and relational databases (PostgreSQL preferred)
+- Experience with Docker and containerization
+- Familiarity with CI/CD pipelines (GitHub Actions, Jenkins, or similar)
+- Knowledge of Git and version control best practices
+- Strong problem-solving skills and attention to detail
 
-REQUIRED SKILLS AND EXPERIENCE
-- 5+ years of professional backend development experience
-- Expert-level proficiency in Python (FastAPI, Django, or similar frameworks)
-- Strong experience with AWS services including EC2, RDS, S3, Lambda, and CloudWatch
-- Deep understanding of Docker and Kubernetes for container orchestration
-- Proficient in relational (PostgreSQL) and NoSQL (MongoDB, DynamoDB) databases
-- Experience designing and implementing RESTful APIs and GraphQL endpoints
-- Solid understanding of microservices architecture and distributed systems
-- Hands-on experience with CI/CD tools (Jenkins, GitLab CI, GitHub Actions)
-- Strong knowledge of Linux system administration
-- Experience with SQL optimization and database indexing
-- Expertise in API security and authentication (OAuth, JWT)
-- Excellent problem-solving and debugging skills
+Preferred Qualifications:
+- Experience with Redis or other caching solutions
+- Familiarity with Kubernetes and container orchestration
+- AWS, GCP, or Azure cloud experience
+- Experience with Apache Kafka or message queues
+- Knowledge of microservices architecture
+- Experience with automated testing (pytest, unit testing)
 
-PREFERRED QUALIFICATIONS
-- Experience with Apache Kafka or RabbitMQ for message queues
-- Knowledge of caching strategies and Redis
-- Familiarity with containerization platforms beyond Docker
-- Experience with Infrastructure as Code (Terraform)
-- Understanding of monitoring and logging solutions (ELK stack, Prometheus, Grafana)
-- Open source contributions
-- Experience with TypeScript or Go
-- Previous experience mentoring engineers
-- AWS Certified Solutions Architect certification
-
-TOOLS AND TECHNOLOGIES
-Primary: Python, FastAPI, PostgreSQL, AWS, Docker, Kubernetes, Git, Linux
-Secondary: MongoDB, Redis, Kafka, GraphQL, Jenkins, Terraform, JavaScript/TypeScript
-
-NICE TO HAVE
-- Performance optimization experience
-- Knowledge of design patterns
-- API documentation experience using OpenAPI/Swagger
-- Test-driven development (TDD) experience
-
-ABOUT THE ROLE
-This is a leadership role where you'll take ownership of critical backend systems. You'll work with a talented engineering team to build and maintain infrastructure that powers modern applications. The role offers opportunities for growth, mentorship, and working on challenging technical problems at scale.
+What We Offer:
+- Competitive salary and equity
+- Remote-first culture
+- Health insurance and wellness benefits
+- Annual learning budget of ₹50,000
+- Fast-paced, collaborative environment

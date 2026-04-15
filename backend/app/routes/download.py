@@ -1,35 +1,43 @@
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import StreamingResponse
-from app.models.request_models import PDFDownloadRequest
-from app.services import pdf_service
-import io
+from fastapi.responses import Response
+from app.models.request_models import DownloadRequest
+from app.services.pdf_service import create_optimized_pdf
 import logging
 
-logger = logging.getLogger(__name__)
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
 
 @router.post("/download")
-async def download_resume(data: PDFDownloadRequest):
-    """Generate and download optimized resume as PDF."""
-    
-    try:
-        if not data.optimized_resume.strip():
-            raise HTTPException(status_code=400, detail="Resume text is empty")
-        
-        logger.info("Generating PDF...")
-        pdf_bytes = pdf_service.generate_pdf(data.optimized_resume)
-        
-        return StreamingResponse(
-            io.BytesIO(pdf_bytes),
-            media_type="application/pdf",
-            headers={"Content-Disposition": "attachment; filename=optimized_resume.pdf"}
+async def download_pdf(data: DownloadRequest):
+    """
+    Generate and return an ATS-safe PDF of the optimized resume.
+    Returns PDF as binary download.
+    """
+    if not data.optimized_resume or len(data.optimized_resume.strip()) < 50:
+        raise HTTPException(
+            status_code=400,
+            detail="Optimized resume text is empty or too short."
         )
-    
-    except HTTPException:
-        raise
+
+    try:
+        pdf_bytes = create_optimized_pdf(
+            optimized_resume=data.optimized_resume,
+            candidate_name=data.candidate_name or "Candidate"
+        )
+
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": "attachment; filename=optimized_resume.pdf",
+                "Content-Length": str(len(pdf_bytes))
+            }
+        )
+
     except Exception as e:
-        logger.error(f"PDF download error: {e}")
+        logger.error(f"PDF generation failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Error generating PDF: {str(e)}"
+            detail=f"PDF generation failed: {str(e)}"
         )

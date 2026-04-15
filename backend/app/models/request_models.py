@@ -1,5 +1,29 @@
-from pydantic import BaseModel
-from typing import List, Literal
+from pydantic import BaseModel, field_validator
+from typing import Literal, Optional
+
+
+# ─── Request Models ───────────────────────────────────────────────────────────
+
+class OptimizeRequest(BaseModel):
+    resume_text: str
+    job_description: str
+
+    @field_validator('resume_text', 'job_description')
+    @classmethod
+    def must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Field cannot be empty")
+        if len(v.strip()) < 50:
+            raise ValueError("Text is too short to be valid")
+        return v.strip()
+
+
+class DownloadRequest(BaseModel):
+    optimized_resume: str
+    candidate_name: Optional[str] = "Candidate"
+
+
+# ─── Response Models ──────────────────────────────────────────────────────────
 
 class ScoreBreakdown(BaseModel):
     overall: float
@@ -8,30 +32,39 @@ class ScoreBreakdown(BaseModel):
     keyword_coverage: float
     formatting: str = "ATS Safe"
 
+
+class ScorePair(BaseModel):
+    initial: ScoreBreakdown
+    optimized: ScoreBreakdown
+
+
 class SkillGap(BaseModel):
     skill: str
     priority: Literal["High", "Medium", "Low"]
 
+
 class DiffItem(BaseModel):
     original: str
     optimized: str
-    changed: bool = True
+    changed: bool
 
-class ResumeInput(BaseModel):
-    resume_text: str
-    job_description: str
 
 class OptimizeResponse(BaseModel):
     status: str = "success"
-    scores: dict
-    skill_gaps: List[SkillGap]
+    scores: ScorePair
+    skill_gaps: list[SkillGap]
     optimized_resume: str
-    diff: List[DiffItem]
+    diff: list[DiffItem]
 
-class PDFDownloadRequest(BaseModel):
-    optimized_resume: str
 
 class UploadResponse(BaseModel):
     status: str = "success"
     resume_text: str
-    sections: dict
+    char_count: int
+    sections_detected: list[str]
+
+
+class ErrorResponse(BaseModel):
+    status: str = "error"
+    message: str
+    detail: Optional[str] = None

@@ -1,46 +1,83 @@
-import axios from 'axios';
+import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const BASE_URL = '/api/v1'
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+  timeout: 60000, // 60s — Claude can be slow
+})
 
+// ─── Upload ───────────────────────────────────────────────────────────────────
+
+/**
+ * Upload a PDF resume and get back extracted text.
+ * @param {File} file  - PDF file object
+ * @returns {Promise<{ resume_text, char_count, sections_detected }>}
+ */
 export const uploadResume = async (file) => {
-  const formData = new FormData();
-  formData.append('file', file);
-  const response = await api.post('/upload', formData, {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const res = await api.post('/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return response.data;
-};
+  })
+  return res.data
+}
 
+// ─── Optimize ─────────────────────────────────────────────────────────────────
+
+/**
+ * Run the full optimization pipeline.
+ * @param {string} resumeText      - Extracted or pasted resume text
+ * @param {string} jobDescription  - Pasted job description
+ * @returns {Promise<OptimizeResponse>}
+ *
+ * OptimizeResponse shape:
+ * {
+ *   scores: {
+ *     initial:   { overall, skills_match, experience_match, keyword_coverage, formatting },
+ *     optimized: { overall, skills_match, experience_match, keyword_coverage, formatting }
+ *   },
+ *   skill_gaps:       [{ skill, priority }],
+ *   optimized_resume: string,
+ *   diff:             [{ original, optimized, changed }]
+ * }
+ */
 export const optimizeResume = async (resumeText, jobDescription) => {
-  const response = await api.post('/optimize', {
-    resume_text: resumeText,
+  const res = await api.post('/optimize', {
+    resume_text:     resumeText,
     job_description: jobDescription,
-  });
-  return response.data;
-};
+  })
+  return res.data
+}
 
-export const downloadPDF = async (optimizedResume) => {
-  const response = await api.post(
+// ─── Download ─────────────────────────────────────────────────────────────────
+
+/**
+ * Generate and download the optimized resume as PDF.
+ * @param {string} optimizedResume  - Optimized resume text
+ * @param {string} candidateName    - Name for the PDF filename
+ */
+export const downloadPDF = async (optimizedResume, candidateName = 'Candidate') => {
+  const res = await api.post(
     '/download',
-    { optimized_resume: optimizedResume },
+    { optimized_resume: optimizedResume, candidate_name: candidateName },
     { responseType: 'blob' }
-  );
-  
-  const url = window.URL.createObjectURL(new Blob([response.data]));
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', 'optimized_resume.pdf');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+  )
 
-export default api;
+  const url  = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+  const link = document.createElement('a')
+  link.href  = url
+  link.setAttribute('download', `${candidateName.replace(/\s+/g, '_')}_optimized_resume.pdf`)
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.URL.revokeObjectURL(url)
+}
+
+// ─── Health ───────────────────────────────────────────────────────────────────
+
+export const checkHealth = async () => {
+  const res = await api.get('/health')
+  return res.data
+}

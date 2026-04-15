@@ -1,92 +1,213 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Diff } from 'lucide-react';
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { countChanges } from '../utils/helpers.js'
 
-export const ResumeDiff = ({ diffs }) => {
-  const changedDiffs = diffs.filter(d => d.changed && d.original !== d.optimized).slice(0, 8);
+// Simple inline diff highlighter — no external dep needed
+function highlightChanges(original, optimized) {
+  if (original === optimized) return { origHtml: original, optHtml: optimized }
 
-  if (!changedDiffs || changedDiffs.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg shadow-lg p-8 text-center"
-      >
-        <p className="text-slate-500">No significant changes made.</p>
-      </motion.div>
-    );
-  }
+  const origWords = original.split(' ')
+  const optWords  = optimized.split(' ')
+  const optSet    = new Set(optWords.map(w => w.toLowerCase().replace(/[^a-z0-9]/g, '')))
+  const origSet   = new Set(origWords.map(w => w.toLowerCase().replace(/[^a-z0-9]/g, '')))
+
+  const origHtml = origWords.map(w => {
+    const clean = w.toLowerCase().replace(/[^a-z0-9]/g, '')
+    return optSet.has(clean) ? w : `<mark class="removed">${w}</mark>`
+  }).join(' ')
+
+  const optHtml = optWords.map(w => {
+    const clean = w.toLowerCase().replace(/[^a-z0-9]/g, '')
+    return origSet.has(clean) ? w : `<mark class="added">${w}</mark>`
+  }).join(' ')
+
+  return { origHtml, optHtml }
+}
+
+function DiffRow({ item, index, isExpanded, onToggle }) {
+  const { origHtml, optHtml } = highlightChanges(item.original, item.optimized)
+  const hasChange = item.changed
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg shadow-lg p-8"
+      transition={{ delay: index * 0.05 }}
+      className={`rounded-xl overflow-hidden border ${
+        hasChange
+          ? 'border-brand-500/30 bg-brand-500/5'
+          : 'border-white/5 bg-white/2'
+      }`}
     >
-      <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-        <Diff size={24} /> Resume Improvements
-      </h3>
+      {/* Row header */}
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
+      >
+        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${hasChange ? 'bg-green-400' : 'bg-slate-600'}`} />
+        <span className="text-sm text-slate-300 flex-1 truncate">
+          {item.original.slice(0, 80)}{item.original.length > 80 ? '…' : ''}
+        </span>
+        {hasChange && (
+          <span className="text-xs text-green-400 font-medium bg-green-400/10 px-2 py-0.5 rounded-full flex-shrink-0">
+            Improved
+          </span>
+        )}
+        <span className="text-slate-600 text-xs">{isExpanded ? '▲' : '▼'}</span>
+      </button>
 
-      <div className="space-y-4">
-        {changedDiffs.map((diff, idx) => (
+      {/* Expanded diff */}
+      <AnimatePresence>
+        {isExpanded && (
           <motion.div
-            key={idx}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: idx * 0.1 }}
-            className="border border-slate-200 rounded-lg overflow-hidden"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
           >
-            <div className="grid grid-cols-2 gap-0">
+            <div className="grid grid-cols-2 gap-px bg-white/5 border-t border-white/5">
               {/* Original */}
-              <div className="bg-red-50 p-4 border-r border-slate-200">
-                <p className="text-xs font-semibold text-red-700 uppercase mb-2">
-                  Original
-                </p>
-                <p className="text-sm text-slate-700 line-through">
-                  {diff.original}
-                </p>
+              <div className="bg-[#0f1320] px-4 py-3">
+                <p className="text-xs text-red-400 font-semibold uppercase tracking-wider mb-2">Original</p>
+                <p
+                  className="text-sm text-slate-400 leading-relaxed diff-text"
+                  dangerouslySetInnerHTML={{ __html: origHtml }}
+                />
               </div>
-
               {/* Optimized */}
-              <div className="bg-green-50 p-4">
-                <p className="text-xs font-semibold text-green-700 uppercase mb-2">
-                  Optimized
-                </p>
-                <p className="text-sm text-slate-700 font-medium">
-                  {highlightChanges(diff.original, diff.optimized)}
-                </p>
+              <div className="bg-[#0a1218] px-4 py-3">
+                <p className="text-xs text-green-400 font-semibold uppercase tracking-wider mb-2">Optimized</p>
+                <p
+                  className="text-sm text-slate-200 leading-relaxed diff-text"
+                  dangerouslySetInnerHTML={{ __html: optHtml }}
+                />
               </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
+export default function ResumeDiff({ diff }) {
+  const [expandedIdx, setExpandedIdx]   = useState(null)
+  const [showAll,     setShowAll]       = useState(false)
+  const [filter,      setFilter]        = useState('all') // 'all' | 'changed' | 'unchanged'
+
+  if (!diff || diff.length === 0) {
+    return (
+      <div className="glass-card p-6">
+        <p className="section-title">Resume Improvements</p>
+        <p className="text-slate-500 text-sm text-center py-8">No bullets found to compare.</p>
+      </div>
+    )
+  }
+
+  const changedCount   = countChanges(diff)
+  const unchangedCount = diff.length - changedCount
+
+  const filteredDiff = diff.filter(item => {
+    if (filter === 'changed')   return item.changed
+    if (filter === 'unchanged') return !item.changed
+    return true
+  })
+
+  const displayDiff = showAll ? filteredDiff : filteredDiff.slice(0, 6)
+
+  const handleToggle = (idx) => {
+    setExpandedIdx(prev => prev === idx ? null : idx)
+  }
+
+  return (
+    <div className="glass-card p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <p className="section-title mb-0">Resume Improvements</p>
+        <div className="flex items-center gap-3 text-xs text-slate-500">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-green-400" />
+            {changedCount} improved
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-slate-600" />
+            {unchangedCount} unchanged
+          </span>
+        </div>
+      </div>
+
+      {/* Improvement summary */}
+      <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
+        <span className="text-2xl">✨</span>
+        <div>
+          <p className="text-green-400 font-semibold text-sm">
+            {changedCount} of {diff.length} bullets improved
+          </p>
+          <p className="text-slate-400 text-xs mt-0.5">
+            Click any bullet to see the before/after comparison
+          </p>
+        </div>
+      </div>
+
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-4">
+        {['all', 'changed', 'unchanged'].map(f => (
+          <button
+            key={f}
+            onClick={() => { setFilter(f); setExpandedIdx(null) }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${
+              filter === f
+                ? 'bg-brand-500 text-white'
+                : 'bg-white/5 text-slate-400 hover:bg-white/10'
+            }`}
+          >
+            {f === 'all' ? `All (${diff.length})` : f === 'changed' ? `Improved (${changedCount})` : `Unchanged (${unchangedCount})`}
+          </button>
         ))}
       </div>
 
-      <p className="text-xs text-slate-500 mt-6 text-center">
-        Showing top {changedDiffs.length} improvements out of {diffs.length} total changes
-      </p>
-    </motion.div>
-  );
-};
-
-// Helper function to highlight what changed
-const highlightChanges = (original, optimized) => {
-  // Simple highlighting - in a real app, use a diffing library
-  const origWords = original.split(' ');
-  const optWords = optimized.split(' ');
-
-  return (
-    <span>
-      {optWords.map((word, idx) => {
-        const isNew = !origWords.includes(word);
-        return (
-          <span
+      {/* Diff rows */}
+      <div className="space-y-2">
+        {displayDiff.map((item, idx) => (
+          <DiffRow
             key={idx}
-            className={isNew ? 'font-semibold text-green-700' : ''}
-          >
-            {word}{' '}
-          </span>
-        );
-      })}
-    </span>
-  );
-};
+            item={item}
+            index={idx}
+            isExpanded={expandedIdx === idx}
+            onToggle={() => handleToggle(idx)}
+          />
+        ))}
+      </div>
+
+      {/* Show more */}
+      {filteredDiff.length > 6 && (
+        <button
+          onClick={() => setShowAll(prev => !prev)}
+          className="mt-4 w-full text-center text-sm text-brand-400 hover:text-brand-300 transition-colors py-2"
+        >
+          {showAll
+            ? '↑ Show less'
+            : `↓ Show ${filteredDiff.length - 6} more bullets`}
+        </button>
+      )}
+
+      {/* Inline styles for diff highlights */}
+      <style>{`
+        .diff-text mark.added {
+          background: rgba(34, 197, 94, 0.25);
+          color: #86efac;
+          border-radius: 3px;
+          padding: 0 2px;
+        }
+        .diff-text mark.removed {
+          background: rgba(239, 68, 68, 0.20);
+          color: #fca5a5;
+          border-radius: 3px;
+          padding: 0 2px;
+          text-decoration: line-through;
+        }
+      `}</style>
+    </div>
+  )
+}

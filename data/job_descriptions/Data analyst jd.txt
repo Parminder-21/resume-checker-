@@ -1,0 +1,35 @@
+Data Analyst
+FinEdge Analytics | Mumbai, India | Full-time
+
+About the Role:
+We are hiring a Data Analyst to work with our business intelligence team. You will turn raw data into actionable insights that drive product and business decisions.
+
+Responsibilities:
+- Analyze large datasets to identify trends, patterns, and business opportunities
+- Build and maintain dashboards and reports for stakeholders
+- Write SQL queries to extract and transform data from multiple sources
+- Collaborate with product and engineering teams on data requirements
+- Perform A/B testing analysis and communicate results clearly
+- Automate recurring reporting workflows using Python
+
+Required Qualifications:
+- 1–3 years of experience in data analysis or a related field
+- Strong proficiency in SQL (complex joins, window functions, CTEs)
+- Experience with Python for data analysis (Pandas, NumPy, Matplotlib)
+- Experience with a BI tool (Tableau, Power BI, or Looker)
+- Excellent data visualization and storytelling skills
+- Strong analytical thinking and problem-solving ability
+- Degree in Computer Science, Statistics, Mathematics, or related field
+
+Preferred Qualifications:
+- Experience with dbt or similar data transformation tools
+- Familiarity with Apache Spark or big data tools
+- Knowledge of statistical analysis and hypothesis testing
+- Experience with Google BigQuery or Snowflake
+- Exposure to machine learning concepts
+- Experience working in Agile/Scrum teams
+
+Nice to Have:
+- Excel (advanced) and Google Sheets expertise
+- Familiarity with ETL pipelines
+- Experience with Airflow or workflow orchestration tools

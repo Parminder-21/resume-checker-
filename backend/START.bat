@@ -30,20 +30,26 @@ echo Upgrading pip...
 python -m pip install --upgrade pip --quiet
 
 REM Install requirements
-echo Installing dependencies...
-pip install --quiet ^
-    fastapi ^
-    uvicorn ^
-    python-multipart ^
-    python-dotenv ^
-    anthropic ^
-    pydantic ^
-    pydantic-settings
+echo Installing dependencies from requirements.txt...
+pip install -r requirements.txt
 
 if errorlevel 1 (
-    echo WARNING: Some packages failed to install
-    echo Trying basic packages...
-    pip install fastapi uvicorn python-dotenv
+    echo WARNING: Full requirements installation failed
+    echo Installing minimal packages...
+    pip install ^
+        fastapi ^
+        uvicorn ^
+        python-multipart ^
+        python-dotenv ^
+        anthropic ^
+        pydantic ^
+        pydantic-settings ^
+        pdfplumber ^
+        reportlab ^
+        sentence-transformers ^
+        scikit-learn ^
+        spacy ^
+        numpy
 )
 
 echo.

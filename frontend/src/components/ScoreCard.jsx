@@ -1,103 +1,147 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { TrendingUp } from 'lucide-react';
-import { getScoreColor, formatScore } from '../utils/helpers';
+import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { getScoreColor, scoreDelta } from '../utils/helpers.js'
 
-export const ScoreCard = ({ scores }) => {
-  const { initial, optimized } = scores || { initial: {}, optimized: {} };
+const SCORE_ROWS = [
+  { key: 'skills_match',     label: 'Skills Match',       icon: '🎯' },
+  { key: 'experience_match', label: 'Experience Match',   icon: '💼' },
+  { key: 'keyword_coverage', label: 'Keyword Coverage',   icon: '🔑' },
+]
 
-  const metrics = [
-    { label: 'Skills Match', key: 'skills_match' },
-    { label: 'Experience Match', key: 'experience_match' },
-    { label: 'Keyword Coverage', key: 'keyword_coverage' },
-  ];
+function AnimatedScore({ target, delay = 0 }) {
+  const [display, setDisplay] = useState(0)
+
+  useEffect(() => {
+    let start = null
+    const duration = 1000
+    const step = (timestamp) => {
+      if (!start) start = timestamp
+      const progress = Math.min((timestamp - start) / duration, 1)
+      setDisplay(Math.round(progress * target))
+      if (progress < 1) requestAnimationFrame(step)
+    }
+    const timer = setTimeout(() => requestAnimationFrame(step), delay)
+    return () => clearTimeout(timer)
+  }, [target, delay])
+
+  return <span>{display}</span>
+}
+
+function ScoreBar({ value, delay = 0, colorClass }) {
+  return (
+    <div className="score-bar-track flex-1">
+      <motion.div
+        className={`h-full rounded-full ${colorClass}`}
+        initial={{ width: '0%' }}
+        animate={{ width: `${value}%` }}
+        transition={{ duration: 1.0, delay: delay / 1000, ease: 'easeOut' }}
+      />
+    </div>
+  )
+}
+
+export default function ScoreCard({ initial, optimized }) {
+  const initColor = getScoreColor(initial.overall)
+  const optColor  = getScoreColor(optimized.overall)
+  const delta     = scoreDelta(initial.overall, optimized.overall)
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg shadow-lg p-8 space-y-6"
-    >
-      {/* Main Score */}
-      <div className="text-center">
-        <p className="text-sm font-medium text-slate-500 mb-2">OVERALL ATS MATCH</p>
-        <div className="flex items-center justify-center gap-4">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className={`text-4xl font-bold ${getScoreColor(initial.overall || 0)}`}
+    <div className="glass-card p-6">
+      <p className="section-title">ATS Score Analysis</p>
+
+      {/* Big score comparison */}
+      <div className="flex items-center justify-between mb-8">
+        {/* Initial score */}
+        <div className="text-center">
+          <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">Before</p>
+          <motion.p
+            className={`text-5xl font-bold ${initColor.text}`}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
           >
-            {formatScore(initial.overall || 0)}
-          </motion.div>
-          <TrendingUp size={32} className="text-green-500" />
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className={`text-4xl font-bold ${getScoreColor(optimized.overall || 0)}`}
-          >
-            {formatScore(optimized.overall || 0)}
-          </motion.div>
+            <AnimatedScore target={Math.round(initial.overall)} delay={0} />
+            <span className="text-2xl">%</span>
+          </motion.p>
         </div>
-        <p className="text-sm text-slate-500 mt-4">
-          ✨ Improvement: +{Math.round((optimized.overall || 0) - (initial.overall || 0))}%
-        </p>
-      </div>
 
-      <hr className="border-slate-200" />
-
-      {/* Detailed Metrics */}
-      <div className="space-y-3">
-        {metrics.map((metric, idx) => (
+        {/* Arrow + delta */}
+        <div className="flex flex-col items-center gap-1">
           <motion.div
-            key={metric.key}
-            initial={{ opacity: 0, x: -20 }}
+            className="text-2xl"
+            initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className="space-y-1"
+            transition={{ delay: 0.6 }}
           >
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-700">
-                ✅ {metric.label}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex-grow bg-slate-200 h-2 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${initial[metric.key] || 0}%` }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="h-full bg-blue-400"
-                />
-              </div>
-              <span className="text-xs font-medium text-slate-600 w-8">
-                {formatScore(initial[metric.key] || 0)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex-grow bg-slate-200 h-2 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${optimized[metric.key] || 0}%` }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                  className="h-full bg-green-400"
-                />
-              </div>
-              <span className="text-xs font-medium text-green-600 w-8">
-                {formatScore(optimized[metric.key] || 0)}
-              </span>
-            </div>
+            →
           </motion.div>
-        ))}
+          <motion.span
+            className="text-green-400 font-bold text-sm bg-green-400/10 px-2 py-0.5 rounded-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+          >
+            {delta}%
+          </motion.span>
+        </div>
+
+        {/* Optimized score */}
+        <div className="text-center">
+          <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">After</p>
+          <motion.p
+            className={`text-5xl font-bold ${optColor.text}`}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <AnimatedScore target={Math.round(optimized.overall)} delay={400} />
+            <span className="text-2xl">%</span>
+          </motion.p>
+        </div>
       </div>
 
-      <hr className="border-slate-200" />
+      {/* Breakdown rows */}
+      <div className="space-y-4">
+        {SCORE_ROWS.map(({ key, label, icon }, idx) => {
+          const initVal = Math.round(initial[key])
+          const optVal  = Math.round(optimized[key])
+          const oc      = getScoreColor(optVal)
 
-      {/* Formatting Status */}
-      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-        <span className="text-sm font-medium text-slate-700">Formatting</span>
-        <span className="text-sm font-semibold text-green-700">✔ ATS Safe</span>
+          return (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 + idx * 0.15 }}
+            >
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-sm text-slate-300 flex items-center gap-2">
+                  <span>{icon}</span> {label}
+                </span>
+                <span className="text-sm font-mono">
+                  <span className="text-slate-500">{initVal}%</span>
+                  <span className="text-slate-600 mx-1">→</span>
+                  <span className={`font-semibold ${oc.text}`}>{optVal}%</span>
+                </span>
+              </div>
+              <ScoreBar value={optVal} delay={500 + idx * 150} colorClass={oc.bar} />
+            </motion.div>
+          )
+        })}
+
+        {/* Formatting status */}
+        <motion.div
+          className="flex items-center justify-between pt-2 border-t border-white/10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.0 }}
+        >
+          <span className="text-sm text-slate-300 flex items-center gap-2">
+            <span>📄</span> Formatting
+          </span>
+          <span className="text-sm text-green-400 font-medium">{optimized.formatting}</span>
+        </motion.div>
       </div>
-    </motion.div>
-  );
-};
+    </div>
+  )
+}
