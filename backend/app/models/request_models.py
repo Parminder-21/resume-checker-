@@ -31,6 +31,10 @@ class ScoreBreakdown(BaseModel):
     experience_match: float
     keyword_coverage: float
     formatting: str = "ATS Safe"
+    matched_keywords: list[str] = []
+    missing_keywords: list[str] = []
+    keyword_matched_count: int = 0
+    keyword_total_count: int = 0
 
 
 class ScorePair(BaseModel):
