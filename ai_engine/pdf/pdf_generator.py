@@ -60,7 +60,7 @@ def generate_pdf_reportlab(resume_text: str, output_path: str, candidate_name: s
         
         if any(h in stripped.upper() for h in headers) and len(stripped) < 40:
             elements.append(Paragraph(stripped.upper(), sec_style))
-            elements.append(HRFlowable(width="30%", thickness=0.5, color=LIGHT_GREY, spaceAfter=4, align=TA_LEFT))
+            elements.append(HRFlowable(width="30%", thickness=0.5, color=LIGHT_GREY, spaceAfter=4, hAlign='LEFT'))
         elif stripped.startswith(('-', '*', '•')):
             clean = _clean_text_reportlab(stripped.lstrip('-*• '))
             if clean: elements.append(Paragraph(f"&bull; {clean}", bullet_style))
