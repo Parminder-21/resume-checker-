@@ -39,59 +39,83 @@ def normalize_score(raw: float, min_val: float = 0.2, max_val: float = 0.9, floo
 
 def extract_bullets(text: str) -> list[str]:
     """
-    Extract bullet-point lines from resume text.
-    Looks for lines starting with -, •, *, or numbered lists.
-    Also extracts short lines under sections like "Skills" or "Experience".
+    Aggressively extract bullet-point lines from resume text.
+    Handles resumes with no bullet chars (plain PDF extraction),
+    section-based content, and wall-of-text documents.
     """
     import logging
     logger = logging.getLogger(__name__)
-    
+
     lines = text.split('\n')
     bullets = []
+    seen = set()
+
+    SECTION_KEYWORDS = [
+        'experience', 'skills', 'project', 'achievement',
+        'responsibility', 'education', 'summary', 'objective',
+        'certification', 'work history', 'employment'
+    ]
+    BULLET_PATTERN = re.compile(r'^[-•*●◦▪▸►✓✔◆■□▶→\u2022\u2023\u2043]\s+')
+    NUMBERED_PATTERN = re.compile(r'^\d+[.):\-]\s+')
+    ALL_CAPS_HEADER = re.compile(r'^[A-Z][A-Z\s\/\-]{5,}$')
+
     in_section = False
-    
-    for i, line in enumerate(lines):
+    # NOTE: We do NOT reset in_section on blank lines (that was the bug)
+
+    for line in lines:
         stripped = line.strip()
-        
-        # Skip empty lines and short lines
-        if not stripped or len(stripped) < 10:
-            in_section = False
+
+        # Skip empty or very short lines (but DON'T reset in_section)
+        if not stripped or len(stripped) < 8:
             continue
-        
-        # Check if this is a section header
-        if any(keyword in stripped.lower() for keyword in ['experience', 'skills', 'project', 'achievement', 'responsibility', 'education']):
+
+        # Detect section headers — set in_section but don't add as bullet
+        if any(kw in stripped.lower() for kw in SECTION_KEYWORDS):
             in_section = True
-            logger.debug(f"Found section: {stripped[:30]}")
             continue
-        
-        # Extract formatted bullets (-, •, *, etc. added comprehensive set)
-        if re.match(r'^[-•*●◦▪▸►✓✔◆■□▶→]\s+', stripped):
-            bullet = re.sub(r'^[-•*●◦▪▸►✓✔◆■□▶→]\s+', '', stripped)
-            if len(bullet) > 15:  # Lowered from 20 to catch more content
+
+        # Skip ALL-CAPS headers (e.g., "WORK EXPERIENCE", "EDUCATION")
+        if ALL_CAPS_HEADER.match(stripped) and len(stripped) < 50:
+            in_section = True
+            continue
+
+        # --- Type 1: Traditional bullet characters ---
+        if BULLET_PATTERN.match(stripped):
+            bullet = BULLET_PATTERN.sub('', stripped).strip()
+            if len(bullet) > 10 and bullet not in seen:
                 bullets.append(bullet)
-                logger.debug(f"✓ Found bullet ({len(bullet)} chars): {bullet[:60]}")
-        elif re.match(r'^\d+[.):]\s+', stripped) and len(stripped) > 20:
-            bullet = re.sub(r'^\d+[.):]\s+', '', stripped)
-            bullets.append(bullet)
-            logger.debug(f"✓ Found numbered bullet ({len(bullet)} chars): {bullet[:60]}")
-        # Extract content lines that look like bullet points (indented or in sections)
-        elif in_section and len(stripped) > 25 and not re.match(r'^[A-Z]{2,}', stripped):
-            # This line is likely content in an experience/skills section
-            if not any(stripped.endswith(x) for x in [':', ',', ';']):
+                seen.add(bullet)
+            continue
+
+        # --- Type 2: Numbered list items ---
+        if NUMBERED_PATTERN.match(stripped) and len(stripped) > 15:
+            bullet = NUMBERED_PATTERN.sub('', stripped).strip()
+            if bullet not in seen:
+                bullets.append(bullet)
+                seen.add(bullet)
+            continue
+
+        # --- Type 3: Content lines inside a detected section ---
+        if in_section and 20 < len(stripped) < 300:
+            # Skip lines that look like dates, headers, or job titles
+            has_date = bool(re.search(r'\b(20\d\d|19\d\d|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b', stripped))
+            if not has_date and stripped not in seen:
                 bullets.append(stripped)
-                logger.debug(f"✓ Found section content ({len(stripped)} chars): {stripped[:60]}")
-    
-    # If no bullets found, try to extract meaningful lines as fallback
+                seen.add(stripped)
+
+    # --- Fallback: if nothing found, grab any medium-length line ---
     if not bullets:
-        logger.warning("⚠️ No bullets found with standard patterns, trying fallback")
+        logger.warning("No bullets found with standard patterns — using aggressive fallback")
         for line in lines:
             stripped = line.strip()
-            if 30 < len(stripped) < 200 and not re.match(r'^[A-Z\s]{10,}$', stripped):
+            if 20 < len(stripped) < 300 and not ALL_CAPS_HEADER.match(stripped) and stripped not in seen:
                 bullets.append(stripped)
-                logger.debug(f"✓ Fallback bullet ({len(stripped)} chars): {stripped[:60]}")
-    
-    logger.info(f"📊 Extracted {len(bullets)} bullets total")
-    return bullets
+                seen.add(stripped)
+                if len(bullets) >= 25:
+                    break
+
+    logger.info(f"Extracted {len(bullets)} bullets for Groq optimization")
+    return bullets[:25]  # Cap at 25 to stay within token limits
 
 
 def split_into_sentences(text: str) -> list[str]:
