@@ -122,3 +122,55 @@ def split_into_sentences(text: str) -> list[str]:
     """Simple sentence splitter for resume text."""
     sentences = re.split(r'(?<=[.!?])\s+', text)
     return [s.strip() for s in sentences if len(s.strip()) > 15]
+
+
+def validate_resume_quality(text: str) -> None:
+    """
+    Validate if the provided text looks like a professional resume.
+    
+    Checks:
+    1. Minimum character length (300 chars)
+    2. Presence of at least 2 standard resume section headers
+    
+    Raises:
+        ValueError: If validation fails with a specific reason.
+    """
+    cleaned = text.strip()
+    
+    # 1. Length check
+    if len(cleaned) < 300:
+        raise ValueError(
+            f"The provided content is too short ({len(cleaned)} characters). "
+            "A standard resume should be at least 300 characters long."
+        )
+    
+    # 2. Section check
+    SECTION_KEYWORDS = [
+        'experience', 'skills', 'education', 'project', 'achievement',
+        'responsibility', 'summary', 'objective', 'certification', 
+        'work history', 'employment', 'technical skills', 'profile'
+    ]
+    
+    text_lower = cleaned.lower()
+    found_sections = []
+    
+    for kw in SECTION_KEYWORDS:
+        # Look for the keyword as a potential header (often surrounded by newlines or at start)
+        # Using a more robust regex for header detection
+        if re.search(rf'(?m)^[ \t]*{re.escape(kw)}[ \t]*[:\-]?$', text_lower, re.IGNORECASE) or \
+           re.search(rf'(?m)^[ \t]*[•\-\*●◦▪▸►✓✔◆■□▶→]?[ \t]*{re.escape(kw)}', text_lower, re.IGNORECASE):
+            found_sections.append(kw)
+    
+    # Deduplicate and check count
+    unique_sections = set(found_sections)
+    
+    # Fallback: if no strict headers found, check for general keyword density
+    if len(unique_sections) < 2:
+        # Check for general presence of the keywords anywhere (more lenient)
+        general_matches = [kw for kw in SECTION_KEYWORDS if kw in text_lower]
+        if len(set(general_matches)) < 3:
+            raise ValueError(
+                "This document doesn't look like a professional resume. "
+                "It is missing standard sections like 'Experience', 'Education', or 'Skills'. "
+                "Please upload a valid resume or paste your full professional details."
+            )
