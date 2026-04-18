@@ -8,8 +8,9 @@ from app.core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ALGORITHM = "HS256"
-# In a real app, use a strong secret from .env
-JWT_SECRET = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+
+# Get secret from settings (which pulls from environment variables)
+JWT_SECRET = settings.JWT_SECRET
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)

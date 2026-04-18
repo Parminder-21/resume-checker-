@@ -13,8 +13,17 @@ class Settings:
     SBERT_MODEL: str = os.getenv("SBERT_MODEL", "all-MiniLM-L6-v2")
     MAX_TOKENS: int = int(os.getenv("MAX_TOKENS", "2000"))
     ALLOWED_ORIGINS: list = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+    
+    # Database Settings
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./optiresume.db")
+    
+    # Security Settings
+    JWT_SECRET: str = os.getenv("JWT_SECRET", "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 24 * 60 # 24 hours
+    
+    # App Settings
     MAX_FILE_SIZE_MB: int = 5
-    MAX_RESUME_CHARS: int = 8000   # truncate before LLM call
+    MAX_RESUME_CHARS: int = 8000
     MIN_SCORE_FLOOR: float = 10.0
 
 settings = Settings()
