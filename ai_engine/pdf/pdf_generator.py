@@ -1,153 +1,119 @@
 import os
 import re
 from datetime import datetime
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib.enums import TA_LEFT, TA_CENTER
-from reportlab.lib import colors
+from docx import Document
+from docx.shared import Pt, Inches, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx2pdf import convert
+import logging
 
-# ─── Color Palette ─────────────────────────────────────────────────────────────
-NAVY      = colors.HexColor('#112244')
-DARK_GREY = colors.HexColor('#333333')
-MID_GREY  = colors.HexColor('#666666')
-LIGHT_GREY= colors.HexColor('#bbbbbb')
+logger = logging.getLogger(__name__)
 
 def _clean_text(text: str) -> str:
-    """Sanitize text for ReportLab — handles XML escaping and non-ASCII characters."""
+    """Sanitize text for Word documents."""
     if not text:
         return ""
+    # Standard cleanup for Word
+    text = text.replace('\r', '')
+    return text.strip()
+
+def generate_pdf(resume_text: str, output_path: str, candidate_name: str = "Candidate") -> str:
+    """
+    Generate a professional resume using python-docx and convert to PDF.
     
-    # 1. Unicode to ASCII replacements for standard fonts
-    replacements = {
-        '\u2022': '-', '\u2023': '-', '\u2043': '-',
-        '\u2013': '-', '\u2014': '--',
-        '\u2018': "'", '\u2019': "'", '\u201c': '"', '\u201d': '"',
-        '\u2026': '...', '\u00a0': ' ', '\ufb01': 'fi', '\ufb02': 'fl'
-    }
-    for char, replacement in replacements.items():
-        text = text.replace(char, replacement)
+    Returns:
+        The path to the generated file (might be .docx if conversion fails).
+    """
+    # 1. Create Word Document
+    docx_path = output_path.replace('.pdf', '.docx')
+    doc = Document()
     
-    # 2. XML escaping (Crucial: Paragraphs crash on raw &, <, >)
-    text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+    # Set Narrow Margins (Standard for resumes)
+    sections = doc.sections
+    for section in sections:
+        section.top_margin = Inches(0.5)
+        section.bottom_margin = Inches(0.5)
+        section.left_margin = Inches(0.7)
+        section.right_margin = Inches(0.7)
+
+    # Styling Candidate Name (Header)
+    header_name = doc.add_paragraph()
+    header_name.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = header_name.add_run(candidate_name.upper())
+    run.font.size = Pt(20)
+    run.font.bold = True
+    run.font.name = 'Calibri'
+    run.font.color.rgb = RGBColor(17, 34, 68) # Navy
+
+    # Add a horizontal rule (border) after header
+    p = doc.add_paragraph()
+    p.paragraph_format.space_after = Pt(12)
     
-    return text.encode('ascii', 'ignore').decode('ascii')
-
-
-def generate_pdf(resume_text: str, output_path: str, candidate_name: str = "Candidate") -> None:
-    """Generate a premium, ATS-safe PDF with Aggressive Layout Rescue."""
-    doc = SimpleDocTemplate(
-        output_path,
-        pagesize=letter,
-        topMargin=0.4 * inch, bottomMargin=0.4 * inch,
-        leftMargin=0.6 * inch, rightMargin=0.6 * inch
-    )
-
-    styles = getSampleStyleSheet()
-
-    title_style = ParagraphStyle(
-        'Title', parent=styles['Heading1'],
-        fontSize=20, textColor=NAVY,
-        spaceAfter=14, alignment=TA_CENTER,
-        fontName='Helvetica-Bold'
-    )
-    section_title_style = ParagraphStyle(
-        'Section', parent=styles['Heading2'],
-        fontSize=13, textColor=NAVY,
-        spaceAfter=6, spaceBefore=10,
-        fontName='Helvetica-Bold'
-    )
-    subheading_style = ParagraphStyle(
-        'SubHeading', parent=styles['BodyText'],
-        fontSize=11, leading=13, textColor=DARK_GREY,
-        spaceAfter=4, fontName='Helvetica-Bold'
-    )
-    body_style = ParagraphStyle(
-        'Body', parent=styles['BodyText'],
-        fontSize=10, leading=13, textColor=DARK_GREY,
-        spaceAfter=8, fontName='Helvetica'
-    )
-    bullet_style = ParagraphStyle(
-        'Bullet', parent=styles['BodyText'],
-        fontSize=10, leading=13, leftIndent=15,
-        firstLineIndent=0, spaceAfter=4,
-        textColor=DARK_GREY, fontName='Helvetica'
-    )
-    footer_style = ParagraphStyle(
-        'Footer', fontSize=8, textColor=LIGHT_GREY, alignment=TA_CENTER
-    )
-
-    elements = []
-
-    # Header
-    elements.append(Paragraph(_clean_text(candidate_name).upper(), title_style))
-    elements.append(HRFlowable(width="100%", thickness=1, color=NAVY, spaceAfter=10))
-
-    # Aggressive Layout Rescue
-    text = resume_text
+    # Process text into sections and bullets
     headers = [
         'EXPERIENCE', 'EDUCATION', 'SKILLS', 'PROJECTS', 'SUMMARY',
-        'CERTIFICATIONS', 'LANGUAGES', 'TECHNICAL SKILLS', 'ACHIEVEMENTS'
+        'CERTIFICATIONS', 'LANGUAGES', 'TECHNICAL SKILLS', 'ACHIEVEMENTS',
+        'PROFESSIONAL SUMMARY', 'WORK EXPERIENCE'
     ]
-    for h in headers:
-        text = re.sub(f"(?<!\n\n)(?P<head>{h})", r"\n\n\g<head>", text, flags=re.IGNORECASE)
-
-    date_pattern = (
-        r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|20\d{2})"
-        r"\s?[\-\u2013\u2014\s]\s?"
-        r"(?:Present|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|20\d{2})"
-    )
-    text = re.sub(f"(?<!\n\n)(?P<date>{date_pattern})", r"\n\n\g<date>", text)
-    text = re.sub(r"(?<!\n)(?P<bull>[•\-\*])", r"\n\g<bull>", text)
-
-    chunks = text.split('\n')
-    for chunk in chunks:
-        stripped = chunk.strip()
+    
+    lines = resume_text.split('\n')
+    for line in lines:
+        stripped = line.strip()
         if not stripped:
             continue
-        clean = _clean_text(stripped)
-        if not clean:
-            continue
-
-        # Section Header
-        if any(h in clean.upper() for h in headers) and len(clean) < 40:
-            if len(elements) > 2:
-                elements.append(Spacer(1, 0.1 * inch))
-            elements.append(Paragraph(clean.upper(), section_title_style))
-            elements.append(HRFlowable(width="30%", thickness=0.5, color=LIGHT_GREY, spaceAfter=4, align=TA_LEFT))
-
-        # Date / Subheader
-        elif re.search(date_pattern, clean) and len(clean) < 120:
-            elements.append(Paragraph(clean, subheading_style))
-
-        # Bullets
-        elif stripped.startswith(('-', '*', '\u2022')) or (
-            len(stripped) > 1 and stripped[0].isdigit() and stripped[1] == '.'
+            
+        # Detect Section Header
+        if any(h in stripped.upper() for h in headers) and len(stripped) < 40:
+            h_para = doc.add_paragraph()
+            h_para.paragraph_format.space_before = Pt(12)
+            h_para.paragraph_format.space_after = Pt(6)
+            run = h_para.add_run(stripped.upper())
+            run.font.size = Pt(13)
+            run.font.bold = True
+            run.font.name = 'Calibri'
+            run.font.color.rgb = RGBColor(17, 34, 68) # Navy
+            
+        # Detect Bullet Points
+        elif stripped.startswith(('-', '*', '•')) or (
+            len(stripped) > 2 and stripped[0].isdigit() and stripped[1] == '.'
         ):
-            content = clean.lstrip('-*\u2022 0123456789. ').strip()
+            # Remove bullet char
+            content = re.sub(r'^[-•*●◦▪▸►✓✔◆■□▶→\d. ]+', '', stripped).strip()
             if content:
-                elements.append(Paragraph(f"&bull; {content}", bullet_style))
-
+                p = doc.add_paragraph(content, style='List Bullet')
+                p.paragraph_format.space_after = Pt(3)
+        
         # Standard Body
         else:
-            if len(clean) > 400:
-                sentences = re.split(r'(?<=[.!?])\s+', clean)
-                for i in range(0, len(sentences), 3):
-                    group = " ".join(sentences[i:i+3])
-                    elements.append(Paragraph(group, body_style))
-            else:
-                elements.append(Paragraph(clean, body_style))
+            p = doc.add_paragraph(stripped)
+            p.paragraph_format.space_after = Pt(6)
+            run = p.runs[0] if p.runs else p.add_run()
+            run.font.size = Pt(10)
+            run.font.name = 'Calibri'
 
     # Footer
-    elements.append(Spacer(1, 0.5 * inch))
-    footer_text = f"Optimized for ATS &bull; {datetime.now().strftime('%Y')}"
-    elements.append(Paragraph(_clean_text(footer_text), footer_style))
+    footer = doc.add_paragraph()
+    footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = footer.add_run(f"\nOptimized for ATS · {datetime.now().year}")
+    run.font.size = Pt(8)
+    run.font.italic = True
+    run.font.color.rgb = RGBColor(150, 150, 150)
 
-    doc.build(elements)
+    # Save Word Doc
+    doc.save(docx_path)
+    logger.info(f"✓ DOCX created at {docx_path}")
 
+    # 2. Try PDF Conversion (Requires MS Word)
+    try:
+        logger.info(f"⌛ Attempting PDF conversion for {docx_path}...")
+        convert(docx_path, output_path)
+        logger.info(f"✅ PDF successfully created at {output_path}")
+        return output_path # Success
+    except Exception as e:
+        logger.warning(f"⚠️ PDF conversion failed (Likely MS Word missing): {e}")
+        # Return the docx path as the fallback
+        return docx_path
 
-def generate_docx(resume_text: str, output_path: str, candidate_name: str = "Candidate") -> None:
-    """Basic DOCX fallback (writes plain text)."""
-    with open(output_path, 'w', encoding='utf-8', errors='ignore') as f:
-        f.write(f"{candidate_name}\n\n{resume_text}")
+def generate_docx(resume_text: str, output_path: str, candidate_name: str = "Candidate") -> str:
+    """Wrapper for legacy calls."""
+    return generate_pdf(resume_text, output_path, candidate_name)
