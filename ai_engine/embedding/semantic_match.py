@@ -1,24 +1,27 @@
-# AI Engine - Embedding module
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
-import re
+from sklearn.feature_extraction.text import TfidfVectorizer
 
-
-def compute_similarity(text_a: str, text_b: str, model) -> float:
+def compute_similarity(text_a: str, text_b: str, model=None) -> float:
     """
-    Compute semantic similarity between two texts using SBERT.
+    Compute semantic similarity between two texts using lightweight TF-IDF.
+    Bypasses PyTorch entirely to prevent 512MB RAM limit crashes.
     Returns score 0-100.
     """
     try:
-        emb_a = model.encode([text_a])
-        emb_b = model.encode([text_b])
-        raw = cosine_similarity(emb_a, emb_b)[0][0]
+        # If texts are empty or too small, return baseline
+        if not text_a or not text_b or len(text_a.strip()) < 10 or len(text_b.strip()) < 10:
+            return 20.0
+            
+        vectorizer = TfidfVectorizer(stop_words='english')
+        tfidf_matrix = vectorizer.fit_transform([text_a, text_b])
         
-        # Normalize from [0.2, 0.9] range to [0, 100]
-        normalized = (raw - 0.2) / (0.9 - 0.2)
+        raw_similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+        
+        # TF-IDF cosine similarity behaves differently than SBERT; normalize to a nice 0-100 curve
+        normalized = raw_similarity * 2.0 
         score = max(10.0, min(100.0, normalized * 100))
         return round(score, 1)
-    except Exception:
+    except Exception as e:
+        print(f"TF-IDF Error: {e}")
         return 50.0
 
 

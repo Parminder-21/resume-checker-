@@ -33,28 +33,17 @@ else:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load SBERT model once at startup — not per request."""
-    logger.info("Loading SBERT model...")
+    """Use lightweight TF-IDF mode (no SBERT) to fit within Render 512MB RAM limit."""
+    logger.info("Initializing in lightweight mode (TF-IDF) to prevent Out of Memory errors.")
     try:
         # Create database tables
         logger.info("Initializing database...")
         Base.metadata.create_all(bind=engine)
         logger.info("✅ Database tables initialized")
-
-        from sentence_transformers import SentenceTransformer
-        app.state.sbert_model = SentenceTransformer(settings.SBERT_MODEL)
-        logger.info(f"✅ SBERT model '{settings.SBERT_MODEL}' loaded successfully")
     except Exception as e:
-        logger.warning(f"⚠️ Could not load SBERT model: {e}")
-        logger.warning("⚠️ Using dummy model for similarity scoring (output may be less accurate)")
-        # Create a dummy model object with encode method
-        class DummyModel:
-            def encode(self, text):
-                import numpy as np
-                # Return random embeddings for testing
-                return np.random.rand(1, 384)
-        app.state.sbert_model = DummyModel()
+        logger.error(f"⚠️ Database initialization failed: {e}")
 
+    app.state.sbert_model = None
     yield  # App runs here
 
     logger.info("Shutting down OptiResume AI...")

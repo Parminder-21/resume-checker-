@@ -8,9 +8,9 @@ if __name__ == "__main__":
     
     try:
         import uvicorn
-        print("🚀 Starting OptiResume AI Backend...")
-        print("📊 Listening on http://localhost:8000")
-        print("📚 API Docs: http://localhost:8000/docs")
+        print("Starting OptiResume AI Backend...")
+        print("Listening on http://localhost:8000")
+        print("API Docs: http://localhost:8000/docs")
         
         uvicorn.run(
             "app.main:app",
@@ -20,9 +20,9 @@ if __name__ == "__main__":
             log_level="info"
         )
     except ImportError as e:
-        print(f"❌ Missing dependencies: {e}")
+        print(f"Error: Missing dependencies: {e}")
         print("\nRun SETUP.bat first to install requirements!")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         sys.exit(1)

@@ -4,7 +4,6 @@ python-multipart==0.0.9
 python-dotenv==1.0.1
 groq==0.10.0
 pydantic==2.7.0
-sentence-transformers==2.7.0
 scikit-learn==1.5.0
 pdfplumber==0.11.0
 python-docx==1.1.2
@@ -12,5 +11,5 @@ numpy==1.26.4
 sqlalchemy==2.0.31
 passlib[bcrypt]==1.7.4
 pyjwt==2.9.0
-pywin32==306
-docx2pdf==0.1.8
+reportlab==4.2.0
+# Removed sentence-transformers (RAM), docx2pdf (MS Word), and pywin32 for Render/Vercel compatibility
