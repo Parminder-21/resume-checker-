@@ -2,6 +2,28 @@ import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { motion, AnimatePresence } from 'framer-motion'
 import { uploadResume } from '../services/api.js'
+import { useAuth } from '../context/AuthContext'
+
+const SAMPLE_RESUME = `JOHN SMITH
+john.smith@email.com | (555) 123-4567 | LinkedIn.com/in/johnsmith
+
+EXPERIENCE
+Software Engineer - TechCorp (2020-2023)
+- Developed REST APIs using Python and FastAPI
+- Optimized database queries reducing latency by 40%
+- Implemented microservices architecture with Docker
+- Managed CI/CD pipelines with GitHub Actions
+
+Junior Developer - StartupXYZ (2018-2020)
+- Built Python backend services
+- Worked with PostgreSQL databases
+- Collaborated with frontend team on API design
+
+SKILLS
+Python, FastAPI, REST APIs, Docker, Kubernetes, PostgreSQL, Redis, GitHub Actions, AWS
+
+EDUCATION
+BS Computer Science - University of California (2018)`
 
 const SAMPLE_JD = `We are looking for a Software Engineer to join our backend team.
 
@@ -19,6 +41,7 @@ Nice to have:
 - AWS or GCP cloud experience`
 
 export default function Home({ onOptimize, error }) {
+  const { user, logout } = useAuth()
   const [resumeFile,  setResumeFile]  = useState(null)
   const [resumeText,  setResumeText]  = useState('')
   const [jobDesc,     setJobDesc]     = useState('')
@@ -57,7 +80,10 @@ export default function Home({ onOptimize, error }) {
   })
 
   // ── Submit ────────────────────────────────────────────────────────────────
-  const canSubmit = resumeText.trim().length > 100 && jobDesc.trim().length > 50
+  const canSubmit = resumeText.trim().length >= 50 && jobDesc.trim().length >= 50
+  const submitHint = !resumeText.trim() ? 'Upload or paste your resume (min 50 characters)' : 
+                     !jobDesc.trim() ? 'Paste a job description (min 50 characters)' :
+                     'Results in ~10 seconds · No data stored'
 
   const handleSubmit = () => {
     if (!canSubmit) return
@@ -89,9 +115,28 @@ export default function Home({ onOptimize, error }) {
             </div>
             <span className="font-bold text-white text-lg tracking-tight">OptiResume <span className="text-brand-400">AI</span></span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            AI Engine Ready
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              AI Engine Ready
+            </div>
+            
+            {user && (
+              <div className="flex items-center gap-4 pl-6 border-l border-white/10">
+                <div className="flex flex-col items-end">
+                  <span className="text-xs font-semibold text-white">{user.full_name || user.email}</span>
+                  <button 
+                    onClick={logout}
+                    className="text-[10px] text-slate-500 hover:text-brand-400 uppercase tracking-widest font-bold transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-xs text-brand-400 font-bold">
+                  {(user.full_name || user.email).charAt(0).toUpperCase()}
+                </div>
+              </div>
+            )}
           </div>
         </nav>
 
@@ -154,12 +199,21 @@ export default function Home({ onOptimize, error }) {
                       <span className="w-6 h-6 rounded-md bg-brand-500/20 flex items-center justify-center text-xs">1</span>
                       Your Resume
                     </label>
-                    <button
-                      onClick={handlePasteToggle}
-                      className="text-xs text-brand-400 hover:text-brand-300 transition-colors underline underline-offset-2"
-                    >
-                      {inputMode === 'upload' ? 'Paste text instead →' : '← Upload PDF instead'}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => { setResumeText(SAMPLE_RESUME); setResumeFile(null); }}
+                        className="text-xs text-slate-500 hover:text-brand-400 transition-colors"
+                      >
+                        Try demo →
+                      </button>
+                      <span className="text-white/20">|</span>
+                      <button
+                        onClick={handlePasteToggle}
+                        className="text-xs text-brand-400 hover:text-brand-300 transition-colors underline underline-offset-2"
+                      >
+                        {inputMode === 'upload' ? 'Paste text instead →' : '← Upload PDF instead'}
+                      </button>
+                    </div>
                   </div>
 
                   <AnimatePresence mode="wait">
@@ -315,11 +369,11 @@ export default function Home({ onOptimize, error }) {
 
                 {!canSubmit && (
                   <p className="text-xs text-slate-600">
-                    {!resumeText.trim() ? 'Upload or paste your resume to continue' : 'Add a job description to continue'}
+                    {submitHint}
                   </p>
                 )}
                 {canSubmit && (
-                  <p className="text-xs text-slate-500">Results in ~10 seconds · No data stored</p>
+                  <p className="text-xs text-slate-500">{submitHint}</p>
                 )}
               </div>
             </div>

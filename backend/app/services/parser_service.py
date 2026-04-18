@@ -2,7 +2,10 @@ import sys
 import os
 
 # Allow importing ai_engine from project root
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+# From backend/app/services/ → go up 3 dirs to backend/ → then up 1 to resume-checker- root
+backend_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+project_root = os.path.dirname(backend_root)
+sys.path.insert(0, project_root)
 
 from ai_engine.pdf.pdf_parser import parse_pdf_file
 from ai_engine.extraction.section_detector import detect_sections

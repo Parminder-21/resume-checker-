@@ -2,9 +2,9 @@ import axios from 'axios'
 
 const BASE_URL = '/api/v1'
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 60000, // 60s — Claude can be slow
+  timeout: 60000, 
 })
 
 // ─── Upload ───────────────────────────────────────────────────────────────────
@@ -65,10 +65,15 @@ export const downloadPDF = async (optimizedResume, candidateName = 'Candidate') 
     { responseType: 'blob' }
   )
 
-  const url  = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+  // Read the actual content type from the backend response
+  const contentType = res.headers['content-type'] || 'application/pdf'
+  const isDocx = contentType.includes('wordprocessingml')
+  const ext = isDocx ? 'docx' : 'pdf'
+
+  const url  = window.URL.createObjectURL(new Blob([res.data], { type: contentType }))
   const link = document.createElement('a')
   link.href  = url
-  link.setAttribute('download', `${candidateName.replace(/\s+/g, '_')}_optimized_resume.pdf`)
+  link.setAttribute('download', `${candidateName.replace(/\s+/g, '_')}_optimized_resume.${ext}`)
   document.body.appendChild(link)
   link.click()
   link.remove()

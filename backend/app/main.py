@@ -10,8 +10,10 @@ from fastapi.responses import JSONResponse
 # Allow ai_engine imports from project root
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from app.routes import upload, optimize, download
+from app.routes import upload, optimize, download, auth
 from app.core.config import settings
+from app.db.session import engine, Base
+import app.models.user # Ensure models are loaded for create_all
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,6 +36,11 @@ async def lifespan(app: FastAPI):
     """Load SBERT model once at startup — not per request."""
     logger.info("Loading SBERT model...")
     try:
+        # Create database tables
+        logger.info("Initializing database...")
+        Base.metadata.create_all(bind=engine)
+        logger.info("✅ Database tables initialized")
+
         from sentence_transformers import SentenceTransformer
         app.state.sbert_model = SentenceTransformer(settings.SBERT_MODEL)
         logger.info(f"✅ SBERT model '{settings.SBERT_MODEL}' loaded successfully")
@@ -88,6 +95,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 app.include_router(upload.router,   prefix="/api/v1", tags=["Upload"])
 app.include_router(optimize.router, prefix="/api/v1", tags=["Optimize"])
 app.include_router(download.router, prefix="/api/v1", tags=["Download"])
+app.include_router(auth.router,     prefix="/api/v1", tags=["Auth"])
 
 
 # ─── Health Check ─────────────────────────────────────────────────────────────

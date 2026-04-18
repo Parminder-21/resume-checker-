@@ -2,7 +2,9 @@ import { useState } from 'react'
 import Home   from './pages/home.jsx'
 import Result from './pages/Result.jsx'
 import Loader from './components/Loader.jsx'
+import AuthPage from './pages/AuthPage.jsx'
 import { optimizeResume } from './services/api.js'
+import { useAuth } from './context/AuthContext.jsx'
 
 /**
  * Global app state:
@@ -14,6 +16,7 @@ import { optimizeResume } from './services/api.js'
  */
 
 export default function App() {
+  const { user } = useAuth()
   const [step,       setStep]       = useState('upload')
   const [resumeText, setResumeText] = useState('')
   const [jobDesc,    setJobDesc]    = useState('')
@@ -43,6 +46,10 @@ export default function App() {
     setError(null)
     setResumeText('')
     setJobDesc('')
+  }
+
+  if (!user) {
+    return <AuthPage />
   }
 
   return (

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useAuth } from '../context/AuthContext'
 import ScoreCard  from '../components/ScoreCard.jsx'
 import SkillGap   from '../components/SkillGap.jsx'
 import ResumeDiff from '../components/ResumeDiff.jsx'
@@ -7,6 +8,7 @@ import { downloadPDF } from '../services/api.js'
 import { countChanges } from '../utils/helpers.js'
 
 export default function Result({ results, onReset, resumeText }) {
+  const { user, logout } = useAuth()
   const [downloading, setDownloading] = useState(false)
   const [downloadErr, setDownloadErr] = useState(null)
   const [activeTab,   setActiveTab]   = useState('overview') // 'overview' | 'diff' | 'resume'
@@ -46,22 +48,38 @@ export default function Result({ results, onReset, resumeText }) {
             <span className="font-bold text-white tracking-tight">OptiResume <span className="text-brand-400">AI</span></span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <motion.button
-              onClick={handleDownload}
-              disabled={downloading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              className="btn-primary flex items-center gap-2 py-2 px-5 text-sm"
-            >
-              {downloading
-                ? <><span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Generating PDF...</>
-                : <><span>⬇</span> Download Resume</>
-              }
-            </motion.button>
-            <button onClick={onReset} className="btn-secondary py-2 px-4 text-sm">
-              ← Optimize Another
-            </button>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <motion.button
+                onClick={handleDownload}
+                disabled={downloading}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="btn-primary flex items-center gap-2 py-2 px-5 text-sm"
+              >
+                {downloading
+                  ? <><span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Generating PDF...</>
+                  : <><span>⬇</span> Download Resume</>
+                }
+              </motion.button>
+              <button onClick={onReset} className="btn-secondary py-2 px-4 text-sm">
+                ← Optimize Another
+              </button>
+            </div>
+
+            {user && (
+              <div className="flex items-center gap-3 pl-6 border-l border-white/10">
+                <div className="flex flex-col items-end">
+                  <span className="text-[11px] font-semibold text-white">{user.full_name || user.email}</span>
+                  <button 
+                    onClick={logout}
+                    className="text-[9px] text-slate-500 hover:text-brand-400 uppercase tracking-widest font-bold transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </nav>
 
