@@ -162,18 +162,14 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
 
     # Initialize Groq client
     try:
-        # STRATEGY: Render sets HTTP_PROXY/HTTPS_PROXY which causes newer Groq/OpenAI 
-        # clients to crash with "unexpected keyword argument 'proxies'".
-        # We temporarily unset them for this initialization.
-        http_proxy = os.environ.pop('HTTP_PROXY', None)
-        https_proxy = os.environ.pop('HTTPS_PROXY', None)
-        
-        client = Groq(api_key=api_key)
-        
-        # Restore them if needed for other services
-        if http_proxy: os.environ['HTTP_PROXY'] = http_proxy
-        if https_proxy: os.environ['HTTPS_PROXY'] = https_proxy
-        
+        import httpx
+        # STRATEGY: Explicitly passing an httpx.Client with proxies={} 
+        # stops the library from trying to auto-detect and pass 'proxies'
+        # which causes the crash on Render.
+        client = Groq(
+            api_key=api_key,
+            http_client=httpx.Client(proxies={})
+        )
     except Exception as e:
         logger.error(f"❌ Failed to initialize Groq client: {e}")
         bullets = extract_bullets(resume_text)
