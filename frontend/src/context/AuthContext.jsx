@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
 import { api } from '../services/api';
 
 const AuthContext = createContext();
@@ -20,13 +19,12 @@ export const AuthProvider = ({ children }) => {
 
   const validateToken = async (token) => {
     try {
-      const response = await axios.get('/api/v1/auth/me', {
+      const response = await api.get('/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(response.data);
       // Ensure future requests use this token
       const authHeader = `Bearer ${token}`;
-      axios.defaults.headers.common['Authorization'] = authHeader;
       api.defaults.headers.common['Authorization'] = authHeader;
     } catch (error) {
       console.error('Session expired');
@@ -37,17 +35,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const response = await axios.post('/api/v1/auth/login', { email, password });
+    const response = await api.post('/auth/login', { email, password });
     const { access_token } = response.data;
     localStorage.setItem('token', access_token);
     const authHeader = `Bearer ${access_token}`;
-    axios.defaults.headers.common['Authorization'] = authHeader;
     api.defaults.headers.common['Authorization'] = authHeader;
     await validateToken(access_token);
   };
 
   const register = async (email, password, fullName) => {
-    await axios.post('/api/v1/auth/register', { email, password, full_name: fullName });
+    await api.post('/auth/register', { email, password, full_name: fullName });
   };
 
   const logout = () => {
