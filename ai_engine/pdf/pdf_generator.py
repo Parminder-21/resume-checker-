@@ -15,9 +15,11 @@ MID_GREY  = colors.HexColor('#666666')
 LIGHT_GREY= colors.HexColor('#bbbbbb')
 
 def _clean_text(text: str) -> str:
-    """Sanitize text for ReportLab — strips non-ASCII to prevent encode crashes."""
+    """Sanitize text for ReportLab — handles XML escaping and non-ASCII characters."""
     if not text:
         return ""
+    
+    # 1. Unicode to ASCII replacements for standard fonts
     replacements = {
         '\u2022': '-', '\u2023': '-', '\u2043': '-',
         '\u2013': '-', '\u2014': '--',
@@ -26,6 +28,10 @@ def _clean_text(text: str) -> str:
     }
     for char, replacement in replacements.items():
         text = text.replace(char, replacement)
+    
+    # 2. XML escaping (Crucial: Paragraphs crash on raw &, <, >)
+    text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+    
     return text.encode('ascii', 'ignore').decode('ascii')
 
 
