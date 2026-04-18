@@ -162,7 +162,18 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
 
     # Initialize Groq client
     try:
+        # STRATEGY: Render sets HTTP_PROXY/HTTPS_PROXY which causes newer Groq/OpenAI 
+        # clients to crash with "unexpected keyword argument 'proxies'".
+        # We temporarily unset them for this initialization.
+        http_proxy = os.environ.pop('HTTP_PROXY', None)
+        https_proxy = os.environ.pop('HTTPS_PROXY', None)
+        
         client = Groq(api_key=api_key)
+        
+        # Restore them if needed for other services
+        if http_proxy: os.environ['HTTP_PROXY'] = http_proxy
+        if https_proxy: os.environ['HTTPS_PROXY'] = https_proxy
+        
     except Exception as e:
         logger.error(f"❌ Failed to initialize Groq client: {e}")
         bullets = extract_bullets(resume_text)
@@ -170,7 +181,13 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
 
     # Extract bullets from resume
     bullets = extract_bullets(resume_text)
-    logger.info(f"[EXTRACT] Found {len(bullets)} bullets from resume")
+    
+    # NEW: If extract_bullets still fails, treat paragraphs as bullets so AI always runs
+    if not bullets and len(resume_text) > 100:
+        logger.warning("⚠️ No formatted bullets found. Splitting by double-newlines as fallback.")
+        bullets = [p.strip() for p in resume_text.split('\n\n') if 30 < len(p.strip()) < 500][:15]
+    
+    logger.info(f"[EXTRACT] Found {len(bullets)} bullets for optimization")
 
     if not bullets:
         logger.warning("[EXTRACT] No bullets found - returning unchanged")
